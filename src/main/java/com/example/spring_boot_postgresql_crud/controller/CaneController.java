@@ -2,6 +2,7 @@ package com.example.spring_boot_postgresql_crud.controller;
 
 import com.example.spring_boot_postgresql_crud.model.CaneDTO;
 import com.example.spring_boot_postgresql_crud.service.CaneService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class CaneController {
     }
 
     @GetMapping
-    public List<CaneDTO> getAllCani() {
+    public List<CaneDTO> getAllCani(HttpSession session) {
         return caneService.getAllCani();
     }
 
