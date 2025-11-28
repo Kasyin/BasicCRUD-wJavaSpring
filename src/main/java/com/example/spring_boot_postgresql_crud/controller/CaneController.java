@@ -1,8 +1,12 @@
 package com.example.spring_boot_postgresql_crud.controller;
 
+import com.example.spring_boot_postgresql_crud.response.CaneResponseHandler;
+
+import com.example.spring_boot_postgresql_crud.model.Cane;
 import com.example.spring_boot_postgresql_crud.model.CaneDTO;
 import com.example.spring_boot_postgresql_crud.service.CaneService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +24,16 @@ public class CaneController {
     }
 
     @GetMapping
-    public List<CaneDTO> getAllCani(HttpSession session) {
-        return caneService.getAllCani();
+    public ResponseEntity<Object> getAllCani(HttpSession session) {
+        List<CaneDTO> cani = caneService.getAllCani();
+        return CaneResponseHandler.handleCaneResponse(cani, HttpStatus.OK, session);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CaneDTO> getCaneById(@PathVariable Long id) {
+    public ResponseEntity<Object> getCaneById(@PathVariable Long id, HttpSession session) {
         Optional<CaneDTO> cane = caneService.getCaneById(id);
-        return cane.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        if (cane.isEmpty()) { return CaneResponseHandler.handleCaneResponse((CaneDTO)null, HttpStatus.NOT_FOUND, session); }
+        return CaneResponseHandler.handleCaneResponse(cane.get(), HttpStatus.OK, session);
     }
 
     @PostMapping
@@ -37,18 +43,22 @@ public class CaneController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CaneDTO> updateCane(@PathVariable Long id, @RequestBody CaneDTO caneDTO) {
+    public ResponseEntity<Object> updateCane(@PathVariable Long id, @RequestBody CaneDTO caneDTO, HttpSession session) {
         try {
             CaneDTO updatedCane = caneService.updateCane(id, caneDTO);
-            return ResponseEntity.ok(updatedCane);
+            return CaneResponseHandler.handleCaneResponse(updatedCane, HttpStatus.OK, session);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return CaneResponseHandler.handleCaneResponse((CaneDTO)null, HttpStatus.NOT_FOUND, session);
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CaneDTO> deleteCane(@PathVariable Long id) {
-        caneService.deleteCane(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Object> deleteCane(@PathVariable Long id, HttpSession session) {
+        try {
+            caneService.deleteCane(id);
+            return CaneResponseHandler.handleCaneResponse((CaneDTO)null, HttpStatus.OK, session);
+        } catch (Exception e) {
+            return CaneResponseHandler.handleCaneResponse((CaneDTO)null, HttpStatus.NOT_FOUND, session);
+        }
     }
 }
