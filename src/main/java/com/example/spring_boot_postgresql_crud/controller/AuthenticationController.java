@@ -8,11 +8,11 @@ import com.example.spring_boot_postgresql_crud.service.AuthenticationService;
 import com.example.spring_boot_postgresql_crud.service.JwtService;
 import com.example.spring_boot_postgresql_crud.response.LoginResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 @RequestMapping("/auth")
 @RestController
@@ -29,7 +29,6 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterUserDto registerUserDto, HttpSession session) {
         User registeredUser = authenticationService.signup(registerUserDto);
-        session.setAttribute("user", registeredUser);
 
         RegisterResponse registerResponse = new RegisterResponse(session, registeredUser);
 
@@ -40,12 +39,20 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto,  HttpSession session) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-        session.setAttribute("user", authenticatedUser);
-
         String jwtToken = jwtService.generateToken(authenticatedUser);
+        session.setAttribute("user", authenticatedUser);
+        session.setAttribute("jwtToken", jwtToken);
 
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime()).setSession(session);
 
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+
+        session.invalidate();
+
+        return new ResponseEntity<>("session destroyed", HttpStatus.OK);
     }
 }

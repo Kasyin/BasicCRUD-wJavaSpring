@@ -38,7 +38,6 @@ public class CaneController {
 
     @PostMapping
     public CaneDTO createCane(@RequestBody CaneDTO caneDTO) {
-        System.out.println(caneDTO.toString());
         return caneService.saveCane(caneDTO);
     }
 
